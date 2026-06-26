@@ -1,4 +1,5 @@
 import tkinter as tk
+from boundary.account_registration_view import AccountRegistrationView
 
 class MainView:
 
@@ -16,7 +17,8 @@ class MainView:
         tk.Button(
             self.root,
             text="ユーザー登録",
-            width=20
+            width=20,
+            command=self.open_account_registration_view
         ).pack(pady=5)
 
         tk.Button(
@@ -45,3 +47,7 @@ class MainView:
         ).pack(pady=20)
 
         self.root.mainloop()
+    
+    def open_account_registration_view(self):
+        view = AccountRegistrationView()
+        view.display()
