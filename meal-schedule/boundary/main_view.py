@@ -1,5 +1,7 @@
 import tkinter as tk
 from boundary.account_registration_view import AccountRegistrationView
+from boundary.group_creation_view import GroupCreationView
+from boundary.add_member_view import AddMemberView
 
 class MainView:
 
@@ -24,13 +26,15 @@ class MainView:
         tk.Button(
             self.root,
             text="グループ作成",
-            width=20
+            width=20,
+            command=self.open_group_creation_view
         ).pack(pady=5)
 
         tk.Button(
             self.root,
             text="メンバー追加",
-            width=20
+            width=20,
+            command=self.open_add_member_view
         ).pack(pady=5)
 
         tk.Button(
@@ -50,4 +54,12 @@ class MainView:
     
     def open_account_registration_view(self):
         view = AccountRegistrationView()
+        view.display()
+
+    def open_group_creation_view(self):
+        view = GroupCreationView()
+        view.display()
+
+    def open_add_member_view(self):
+        view = AddMemberView()
         view.display()
