@@ -9,6 +9,7 @@ class AccountRegistrationView:
 
     def display(self):
         self.window = tk.Toplevel()
+        self.window.title("ユーザー登録")
 
         tk.Label(self.window, text="ユーザー名").pack()
 
@@ -27,38 +28,8 @@ class AccountRegistrationView:
         if self.manager.check_user_name_length(user_name):
             self.manager.register_user(user_name)
             messagebox.showinfo("完了", "登録しました")
-    def __init__(self):
-        self.db_name = "meal_schedule.db"
-        self.create_table()
-
-    def create_table(self):
-        conn = sqlite3.connect(self.db_name)
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                account_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_name TEXT NOT NULL
+        else:
+            messagebox.showerror(
+                "エラー",
+                "ユーザー名は1～20文字で入力してください"
             )
-        """)
-
-        conn.commit()
-        conn.close()
-
-    def check_user_name_length(self, user_name):
-        return 0 < len(user_name) <= 20
-
-    def register_user(self, user_name):
-        conn = sqlite3.connect(self.db_name)
-        cursor = conn.cursor()
-
-        cursor.execute(
-            "INSERT INTO users (user_name) VALUES (?)",
-            (user_name,)
-        )
-
-        conn.commit()
-        account_id = cursor.lastrowid
-        conn.close()
-
-        return User(account_id, user_name)
