@@ -1,59 +1,47 @@
-import sqlite3
-from entity.group import Group
+import tkinter as tk
+from tkinter import messagebox
+from control.group_manager import GroupManager
 
 
-class GroupManager:
+class GroupCreationView:
     def __init__(self):
-        self.db_name = "meal_schedule.db"
-        self.create_table()
+        self.manager = GroupManager()
 
-    def create_table(self):
-        conn = sqlite3.connect(self.db_name)
-        cursor = conn.cursor()
+    def display(self):
+        self.window = tk.Toplevel()
+        self.window.title("グループ作成")
+        self.window.geometry("400x220")
 
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS groups (
-                group_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                group_name TEXT NOT NULL
+        tk.Label(
+            self.window,
+            text="グループ名を入力してください",
+            font=("Yu Gothic", 14)
+        ).pack(pady=15)
+
+        self.group_name_entry = tk.Entry(self.window, width=30)
+        self.group_name_entry.pack(pady=10)
+
+        tk.Button(
+            self.window,
+            text="作成",
+            command=self.create_group
+        ).pack(pady=15)
+
+    def create_group(self):
+        group_name = self.group_name_entry.get().strip()
+
+        if not self.manager.check_group_name_length(group_name):
+            messagebox.showerror(
+                "エラー",
+                "グループ名は1～20文字で入力してください"
             )
-        """)
+            return
 
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS group_members (
-                group_id INTEGER NOT NULL,
-                account_id INTEGER NOT NULL
-            )
-        """)
+        group = self.manager.create_group(group_name)
 
-        conn.commit()
-        conn.close()
-
-    def check_group_name_length(self, group_name):
-        return 0 < len(group_name) <= 20
-
-    def create_group(self, group_name):
-        conn = sqlite3.connect(self.db_name)
-        cursor = conn.cursor()
-
-        cursor.execute(
-            "INSERT INTO groups (group_name) VALUES (?)",
-            (group_name,)
+        messagebox.showinfo(
+            "作成完了",
+            f"グループを作成しました\nID: {group.group_id}\n名前: {group.group_name}"
         )
 
-        conn.commit()
-        group_id = cursor.lastrowid
-        conn.close()
-
-        return Group(group_id, group_name)
-
-    def add_member(self, group_id, account_id):
-        conn = sqlite3.connect(self.db_name)
-        cursor = conn.cursor()
-
-        cursor.execute(
-            "INSERT INTO group_members (group_id, account_id) VALUES (?, ?)",
-            (group_id, account_id)
-        )
-
-        conn.commit()
-        conn.close()
+        self.window.destroy()
