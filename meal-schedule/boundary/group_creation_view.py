@@ -38,32 +38,9 @@ class GroupCreationView:
             )
             return
 
-        user = self.account_manager.get_current_user()
+        from boundary.group_creation_confirmation_view import GroupCreationConfirmationView
 
-        if user is None:
-            messagebox.showerror(
-                "エラー",
-                "ユーザー情報が取得できません。"
-            )
-            return
+        view = GroupCreationConfirmationView(group_name)
+        view.display()
 
-        try:
-            group = self.manager.create_group(
-                user.account_id,
-                group_name
-            )
-
-            messagebox.showinfo(
-                "作成完了",
-                f"グループを作成しました\n\n"
-                f"グループID：{group.group_id}\n"
-                f"グループ名：{group.group_name}"
-            )
-
-            self.window.destroy()
-
-        except ValueError as e:
-            messagebox.showerror(
-                "エラー",
-                str(e)
-            )
+        self.window.destroy()
