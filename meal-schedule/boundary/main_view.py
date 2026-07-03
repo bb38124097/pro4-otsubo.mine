@@ -1,6 +1,7 @@
 import tkinter as tk
 import calendar
 from datetime import date
+from control.group_manager import GroupManager
 
 from boundary.group_creation_view import GroupCreationView
 from boundary.add_member_view import AddMemberView
@@ -17,6 +18,7 @@ class MainView:
         self.root.geometry("520x720")
 
         self.account_manager = AccountManager()
+        self.group_manager = GroupManager()
 
         self.year = date.today().year
         self.month = date.today().month
@@ -35,7 +37,6 @@ class MainView:
             self.calendar_area = tk.Frame(self.root)
             self.calendar_area.pack()
             self.create_calendar()
-            self.create_calendar()
 
         self.root.mainloop()
 
@@ -43,34 +44,42 @@ class MainView:
         frame = tk.Frame(self.root)
         frame.pack(pady=5)
 
+        user = self.account_manager.get_current_user()
+        has_group = False
+
+        if user is not None:
+            has_group = self.group_manager.has_group(user.account_id)
+
         tk.Button(
             frame,
             text="登録情報",
             width=14,
             command=self.open_registration_info_view
-        ).grid(row=1, column=0, padx=5, pady=5)
-
-        tk.Button(
-            frame,
-            text="グループ作成",
-            width=14,
-            command=self.open_group_creation_view
         ).grid(row=0, column=0, padx=5, pady=5)
 
-        tk.Button(
-            frame,
-            text="メンバー追加",
-            width=14,
-            command=self.open_add_member_view
-        ).grid(row=0, column=1, padx=5, pady=5)
+        if not has_group:
+            tk.Button(
+                frame,
+                text="グループ作成",
+                width=14,
+                command=self.open_group_creation_view
+            ).grid(row=0, column=1, padx=5, pady=5)
 
-        tk.Button(
-            frame,
-            text="グループ退出",
-            width=14,
-            command=self.open_leave_group_view
-        ).grid(row=0, column=2, padx=5, pady=5)
+        if has_group:
+            tk.Button(
+                frame,
+                text="メンバー追加",
+                width=14,
+                command=self.open_add_member_view
+            ).grid(row=0, column=1, padx=5, pady=5)
 
+            tk.Button(
+                frame,
+                text="グループ退出",
+                width=14,
+                command=self.open_leave_group_view
+            ).grid(row=0, column=2, padx=5, pady=5)
+            
     def create_calendar(self):
         for widget in self.calendar_area.winfo_children():
             widget.destroy()
@@ -158,24 +167,6 @@ class MainView:
     def open_leave_group_view(self):
         view = LeaveGroupView()
         view.display()
-
-    def create_registration_form(self):
-        tk.Label(
-            self.root,
-            text="ユーザー登録",
-            font=("Yu Gothic", 16)
-        ).pack(pady=20)
-
-        tk.Label(self.root, text="ユーザー名").pack()
-
-        self.user_name_entry = tk.Entry(self.root, width=30)
-        self.user_name_entry.pack(pady=5)
-
-        tk.Button(
-            self.root,
-            text="登録",
-            command=self.register_user_from_main
-        ).pack(pady=10)
 
     def create_registration_form(self):
         tk.Label(
