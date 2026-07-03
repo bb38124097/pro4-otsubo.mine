@@ -1,11 +1,12 @@
 import tkinter as tk
 from tkinter import messagebox
 from control.group_manager import GroupManager
-
+from control.account_manager import AccountManager
 
 class GroupCreationView:
     def __init__(self):
         self.manager = GroupManager()
+        self.account_manager = AccountManager()
 
     def display(self):
         self.window = tk.Toplevel()
@@ -37,11 +38,9 @@ class GroupCreationView:
             )
             return
 
-        group = self.manager.create_group(group_name)
+        from boundary.group_creation_confirmation_view import GroupCreationConfirmationView
 
-        messagebox.showinfo(
-            "作成完了",
-            f"グループを作成しました\nID: {group.group_id}\n名前: {group.group_name}"
-        )
+        view = GroupCreationConfirmationView(group_name)
+        view.display()
 
         self.window.destroy()

@@ -1,10 +1,14 @@
-import sqlite3
+import sqlite3, random
 from entity.user import User
 
 class AccountManager:
+    current_user = None
     def __init__(self):
         self.db_name = "meal_schedule.db"
         self.create_table()
+
+        if AccountManager.current_user is None:
+            AccountManager.current_user = self.get_user()
 
     def create_table(self):
         conn = sqlite3.connect(self.db_name)
@@ -12,7 +16,7 @@ class AccountManager:
 
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
-                account_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                account_id INTEGER PRIMARY KEY,
                 user_name TEXT NOT NULL
             )
         """)
@@ -27,16 +31,19 @@ class AccountManager:
         conn = sqlite3.connect(self.db_name)
         cursor = conn.cursor()
 
-        cursor.execute(
-            "INSERT INTO users (user_name) VALUES (?)",
-            (user_name,)
-        )
+        account_id = self.generate_account_id()
 
+        cursor.execute(
+            "INSERT INTO users (account_id, user_name) VALUES (?, ?)",
+            (account_id, user_name)
+        )
         conn.commit()
-        account_id = cursor.lastrowid
         conn.close()
 
-        return User(account_id, user_name)
+        user =User(account_id, user_name)
+        AccountManager.current_user = user
+
+        return user
   
     def has_user(self):
         conn = sqlite3.connect(self.db_name)
@@ -47,3 +54,40 @@ class AccountManager:
 
         conn.close()
         return count > 0
+    
+    def get_user(self):
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT account_id, user_name
+            FROM users
+            LIMIT 1
+        """)
+
+        row = cursor.fetchone()
+        conn.close()
+
+        if row is None:
+            return None
+
+        return User(row[0], row[1])
+    
+    def generate_account_id(self):
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+
+        while True:
+            account_id = random.randint(100000, 999999)
+
+            cursor.execute(
+                "SELECT account_id FROM users WHERE account_id = ?",
+                (account_id,)
+            )
+
+            if cursor.fetchone() is None:
+                conn.close()
+                return account_id
+            
+    def get_current_user(self):
+        return AccountManager.current_user
