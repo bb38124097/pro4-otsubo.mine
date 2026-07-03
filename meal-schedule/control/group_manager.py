@@ -111,3 +111,15 @@ class GroupManager:
 
         conn.commit()
         conn.close()
+
+    def remove_member(self, group_id, account_id):
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "DELETE FROM group_members WHERE group_id = ? AND account_id = ?",
+            (group_id, account_id)
+        )
+
+        conn.commit()
+        conn.close()

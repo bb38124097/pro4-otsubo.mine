@@ -37,3 +37,13 @@ class AccountManager:
         conn.close()
 
         return User(account_id, user_name)
+  
+    def has_user(self):
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT COUNT(*) FROM users")
+        count = cursor.fetchone()[0]
+
+        conn.close()
+        return count > 0
