@@ -32,6 +32,9 @@ class MainView:
 
         else:
             self.create_menu_buttons()
+            self.calendar_area = tk.Frame(self.root)
+            self.calendar_area.pack()
+            self.create_calendar()
             self.create_calendar()
 
         self.root.mainloop()
@@ -69,13 +72,39 @@ class MainView:
         ).grid(row=0, column=2, padx=5, pady=5)
 
     def create_calendar(self):
-        tk.Label(
-            self.root,
-            text=f"{self.year}年 {self.month}月",
-            font=("Yu Gothic", 16)
-        ).pack(pady=10)
+        for widget in self.calendar_area.winfo_children():
+            widget.destroy()
 
-        calendar_frame = tk.Frame(self.root)
+        header = tk.Frame(self.calendar_area)
+        header.pack(pady=10)
+
+        header = tk.Frame(self.calendar_area)
+        header.pack(pady=10)
+
+        prev_month = 12 if self.month == 1 else self.month - 1
+        next_month = 1 if self.month == 12 else self.month + 1
+
+        tk.Button(
+            header,
+            text=f"{prev_month}月",
+            command=self.previous_month,
+            width=6
+        ).pack(side=tk.LEFT, padx=15)
+
+        tk.Label(
+            header,
+            text=f"{self.year}年 {self.month}月",
+            font=("Yu Gothic", 16, "bold")
+        ).pack(side=tk.LEFT, padx=20)
+
+        tk.Button(
+            header,
+            text=f"{next_month}月",
+            command=self.next_month,
+            width=6
+        ).pack(side=tk.LEFT, padx=15)
+
+        calendar_frame = tk.Frame(self.calendar_area)
         calendar_frame.pack()
 
         days = ["月", "火", "水", "木", "金", "土", "日"]
@@ -104,7 +133,7 @@ class MainView:
                         command=lambda d=target_date: self.show_date_detail(d)
                     ).grid(row=row, column=col, padx=2, pady=2)
 
-        self.detail_frame = tk.Frame(self.root)
+        self.detail_frame = tk.Frame(self.calendar_area)
         self.detail_frame.pack(pady=20)
 
     def show_date_detail(self, target_date):
@@ -188,3 +217,21 @@ class MainView:
         from boundary.registration_info_view import RegistrationInfoView
         view = RegistrationInfoView()
         view.display()
+
+    def previous_month(self):
+        if self.month == 1:
+            self.month = 12
+            self.year -= 1
+        else:
+            self.month -= 1
+
+        self.create_calendar()
+
+    def next_month(self):
+        if self.month == 12:
+            self.month = 1
+            self.year += 1
+        else:
+            self.month += 1
+
+        self.create_calendar()
