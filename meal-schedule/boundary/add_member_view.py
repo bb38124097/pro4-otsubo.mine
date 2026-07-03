@@ -6,11 +6,12 @@ from control.group_manager import GroupManager
 class AddMemberView:
     def __init__(self):
         self.manager = GroupManager()
+        self.current_account_id = 1  # 仮。あとでログイン中ユーザーIDにする
 
     def display(self):
         self.window = tk.Toplevel()
         self.window.title("メンバー追加")
-        self.window.geometry("400x250")
+        self.window.geometry("400x220")
 
         tk.Label(
             self.window,
@@ -18,11 +19,8 @@ class AddMemberView:
             font=("Yu Gothic", 16)
         ).pack(pady=15)
 
-        tk.Label(self.window, text="グループID").pack()
-        self.group_id_entry = tk.Entry(self.window, width=30)
-        self.group_id_entry.pack(pady=5)
-
         tk.Label(self.window, text="追加するアカウントID").pack()
+
         self.account_id_entry = tk.Entry(self.window, width=30)
         self.account_id_entry.pack(pady=5)
 
@@ -33,28 +31,27 @@ class AddMemberView:
         ).pack(pady=15)
 
     def add_member(self):
-        group_id = self.group_id_entry.get().strip()
         account_id = self.account_id_entry.get().strip()
 
-        if not group_id or not account_id:
-            messagebox.showerror(
-                "エラー",
-                "グループIDとアカウントIDを入力してください"
-            )
+        if not account_id:
+            messagebox.showerror("エラー", "アカウントIDを入力してください")
             return
 
         try:
-            self.manager.add_member(int(group_id), int(account_id))
+            group_id = self.manager.get_user_group_id(self.current_account_id)
+
+            if group_id is None:
+                messagebox.showerror("エラー", "自分が所属しているグループがありません")
+                return
+
+            self.manager.add_member(group_id, int(account_id))
 
             messagebox.showinfo(
                 "追加完了",
-                f"アカウントID {account_id} をグループID {group_id} に追加しました"
+                f"アカウントID {account_id} を自分のグループに追加しました"
             )
 
             self.window.destroy()
 
         except ValueError:
-            messagebox.showerror(
-                "エラー",
-                "グループIDとアカウントIDは数字で入力してください"
-            )
+            messagebox.showerror("エラー", "アカウントIDは数字で入力してください")

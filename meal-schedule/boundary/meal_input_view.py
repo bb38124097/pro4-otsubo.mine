@@ -4,36 +4,56 @@ from control.meal_schedule_manager import MealScheduleManager
 
 
 class MealInputView:
-    def __init__(self):
+    def __init__(self, target_date, meal_type):
         self.manager = MealScheduleManager()
+        self.target_date = target_date
+        self.meal_type = meal_type
 
     def display(self):
         self.window = tk.Toplevel()
-        self.window.title("食事予定入力")
-        self.window.geometry("420x360")
+        self.window.title("予定入力")
+        self.window.geometry("400x340")
 
-        tk.Label(self.window, text="食事予定入力", font=("Yu Gothic", 16)).pack(pady=15)
+        meal_name = {
+            "breakfast": "朝食",
+            "lunch": "昼食",
+            "dinner": "夕食"
+        }[self.meal_type]
 
-        tk.Label(self.window, text="日付").pack()
-        self.date_entry = tk.Entry(self.window, width=30)
-        self.date_entry.insert(0, "2026-06-26")
-        self.date_entry.pack(pady=5)
+        tk.Label(
+            self.window,
+            text=f"{self.target_date} の {meal_name}",
+            font=("Yu Gothic", 16)
+        ).pack(pady=15)
 
-        self.breakfast_var = tk.BooleanVar()
-        self.lunch_var = tk.BooleanVar()
-        self.dinner_var = tk.BooleanVar()
+        self.required_var = tk.BooleanVar(value=True)
 
-        tk.Checkbutton(self.window, text="朝食が必要", variable=self.breakfast_var).pack()
-        tk.Checkbutton(self.window, text="昼食が必要", variable=self.lunch_var).pack()
-        tk.Checkbutton(self.window, text="夕食が必要", variable=self.dinner_var).pack()
+        tk.Radiobutton(
+            self.window,
+            text="必要",
+            variable=self.required_var,
+            value=True,
+            command=self.toggle_input_fields
+        ).pack()
 
-        tk.Label(self.window, text="帰宅時間").pack()
-        self.return_time_entry = tk.Entry(self.window, width=30)
-        self.return_time_entry.pack(pady=5)
+        tk.Radiobutton(
+            self.window,
+            text="不要",
+            variable=self.required_var,
+            value=False,
+            command=self.toggle_input_fields
+        ).pack()
 
-        tk.Label(self.window, text="メッセージ").pack()
-        self.message_entry = tk.Entry(self.window, width=30)
-        self.message_entry.pack(pady=5)
+        self.detail_frame = tk.Frame(self.window)
+        self.detail_frame.pack(pady=10)
+
+        tk.Label(self.detail_frame, text="帰宅時間").pack()
+        self.return_time_entry = tk.Entry(self.detail_frame, width=30)
+        self.return_time_entry.pack()
+
+        tk.Label(self.detail_frame, text="メッセージ").pack(pady=5)
+        self.message_entry = tk.Entry(self.detail_frame, width=30)
+        self.message_entry.pack()
 
         tk.Button(
             self.window,
@@ -41,24 +61,30 @@ class MealInputView:
             command=self.register_schedule
         ).pack(pady=15)
 
+        self.toggle_input_fields()
+
+    def toggle_input_fields(self):
+        if self.required_var.get():
+            self.detail_frame.pack(pady=10)
+        else:
+            self.detail_frame.pack_forget()
+
     def register_schedule(self):
-        target_date = self.date_entry.get().strip()
-        return_time = self.return_time_entry.get().strip()
-        message = self.message_entry.get().strip()
+        if self.required_var.get():
+            return_time = self.return_time_entry.get().strip()
+            message = self.message_entry.get().strip()
+        else:
+            return_time = ""
+            message = ""
 
-        if not target_date:
-            messagebox.showerror("エラー", "日付を入力してください")
-            return
-
-        self.manager.set_schedule(
+        self.manager.set_one_meal_schedule(
             account_id=1,
-            target_date=target_date,
-            breakfast_required=self.breakfast_var.get(),
-            lunch_required=self.lunch_var.get(),
-            dinner_required=self.dinner_var.get(),
+            target_date=self.target_date,
+            meal_type=self.meal_type,
+            required=self.required_var.get(),
             return_time=return_time,
             message=message
         )
 
-        messagebox.showinfo("登録完了", "食事予定を登録しました")
+        messagebox.showinfo("登録完了", "予定を登録しました")
         self.window.destroy()

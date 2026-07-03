@@ -1,11 +1,12 @@
 import tkinter as tk
 from tkinter import messagebox
 from control.group_manager import GroupManager
-
+from control.account_manager import AccountManager
 
 class GroupCreationView:
     def __init__(self):
         self.manager = GroupManager()
+        self.account_manager = AccountManager()
 
     def display(self):
         self.window = tk.Toplevel()
@@ -37,11 +38,32 @@ class GroupCreationView:
             )
             return
 
-        group = self.manager.create_group(group_name)
+        user = self.account_manager.get_current_user()
 
-        messagebox.showinfo(
-            "作成完了",
-            f"グループを作成しました\nID: {group.group_id}\n名前: {group.group_name}"
-        )
+        if user is None:
+            messagebox.showerror(
+                "エラー",
+                "ユーザー情報が取得できません。"
+            )
+            return
 
-        self.window.destroy()
+        try:
+            group = self.manager.create_group(
+                user.account_id,
+                group_name
+            )
+
+            messagebox.showinfo(
+                "作成完了",
+                f"グループを作成しました\n\n"
+                f"グループID：{group.group_id}\n"
+                f"グループ名：{group.group_name}"
+            )
+
+            self.window.destroy()
+
+        except ValueError as e:
+            messagebox.showerror(
+                "エラー",
+                str(e)
+            )
