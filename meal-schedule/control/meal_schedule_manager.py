@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import re
 
 
@@ -176,7 +175,7 @@ if __name__ == "__main__":
 
     print("\n--- 変更後のDB確認 ---")
     print(MOCK_DATABASE["group_schedules"]["test_user_01_2026-06-26"])
-=======
+
 import sqlite3
 
 
@@ -233,4 +232,4 @@ class MealScheduleManager:
         conn.commit()
         conn.close()
     
->>>>>>> 222963e99a83bc7aa24f080a3c41135e648b6097
+#222963e99a83bc7aa24f080a3c41135e648b6097
