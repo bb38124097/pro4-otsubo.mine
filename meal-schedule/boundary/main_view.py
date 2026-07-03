@@ -17,7 +17,7 @@ class MainView:
         self.root.title("食事予定管理システム")
         self.root.geometry("520x720")
 
-        # 2つの司令塔（Control）を準備
+        # 司令塔（Control）の初期化
         self.account_manager = AccountManager()
         self.group_manager = GroupManager()
 
@@ -28,25 +28,24 @@ class MainView:
             self.root, text="食事予定管理システム", font=("Yu Gothic", 18)
         ).pack(pady=10)
 
-        # ➔ ステップ1: ユーザー自体が未登録なら登録画面を出す
+        # ➔ ユーザー自体が未登録なら登録フォーム、登録済みならメニューとカレンダーを表示
         if not self.account_manager.has_user():
             self.create_registration_form()
         else:
-            # ➔ ステップ2: ユーザー登録があるなら、メニューとカレンダーを出す
             self.create_menu_buttons()
             self.create_calendar()
 
         self.root.mainloop()
 
     def create_menu_buttons(self):
-        """ユーザーのグループ所属状態に合わせてボタンを綺麗に出し分ける"""
+        """ユーザーのグループ所属状態に合わせてボタンを綺麗に出し分ける（配置修正版）"""
         frame = tk.Frame(self.root)
         frame.pack(pady=5)
 
-        # 現在ログインしているユーザー情報を取得
+        # 現在のユーザー情報を取得
         user = self.account_manager.get_current_user()
 
-        # ログインユーザーが現在グループに属しているかIDをチェック
+        # 現在グループに属しているかIDをチェック
         group_id = (
             self.group_manager.get_user_group_id(user.account_id)
             if user
@@ -54,7 +53,7 @@ class MainView:
         )
 
         if group_id is None:
-            # 【未所属】グループ作成ボタンだけを出す
+            # 【未所属】グループ作成ボタンだけを表示
             tk.Button(
                 frame,
                 text="グループ作成",
@@ -62,22 +61,22 @@ class MainView:
                 command=self.open_group_creation_view,
             ).grid(row=0, column=0, padx=5, pady=5)
         else:
-            # 【所属済み】メンバー追加とグループ退出ボタンを出す
+            # 【所属済み】メンバー追加 と グループ退出 をきれいに横並びで表示
             tk.Button(
                 frame,
                 text="メンバー追加",
                 width=14,
                 command=self.open_add_member_view,
-            ).grid(row=0, column=1, padx=5, pady=5)
+            ).grid(row=0, column=0, padx=5, pady=5)
 
             tk.Button(
                 frame,
                 text="グループ退出",
                 width=14,
                 command=self.open_leave_group_view,
-            ).grid(row=0, column=2, padx=5, pady=5)
+            ).grid(row=0, column=1, padx=5, pady=5)
 
-        # 登録情報確認ボタン（常に表示）
+        # 登録情報確認ボタン（常に下の行 row=1 に固定表示）
         tk.Button(
             frame,
             text="登録情報",
@@ -170,7 +169,7 @@ class MainView:
 
         messagebox.showinfo("登録完了", "ユーザー登録が完了しました")
 
-        # 画面を一度リセットしてカレンダーモードで再起動
+        # 画面を一度破棄し、カレンダーモードで再起動
         self.root.destroy()
         app = MainView()
         app.display()
