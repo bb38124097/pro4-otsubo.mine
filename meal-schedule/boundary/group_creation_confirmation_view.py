@@ -1,6 +1,11 @@
-from flask import Flask, redirect, render_template_string, request, url_for
+from flask import Blueprint, redirect, render_template_string, request, url_for
 
-app = Flask(__name__)
+# 本来のパッケージ構成に合わせてインポート（必要に応じてDummyの代わりに有効化してください）
+# from control.account_manager import AccountManager
+# from control.group_manager import GroupManager
+
+# Flaskの他の画面と連携するための設計図（Blueprint）を作成
+group_confirmation_blueprint = Blueprint("group_confirmation", __name__)
 
 
 # ==========================================
@@ -9,7 +14,7 @@ app = Flask(__name__)
 class DummyUser:
 
     def __init__(self, account_id):
-        self.account_id = 123  # ダミーのアカウントID
+        self.account_id = 123
 
 
 class DummyGroup:
@@ -22,18 +27,14 @@ class DummyGroup:
 class DummyAccountManager:
 
     def get_current_user(self):
-        # テスト用（Noneにするとユーザー情報取得エラーのテストができます）
         return DummyUser(account_id=123)
 
 
 class DummyGroupManager:
 
     def create_group(self, account_id: int, group_name: str):
-        # バリデーションテスト用（空文字や特定の名前でエラーを起こしたい場合）
         if group_name == "エラーテスト":
             raise ValueError("このグループ名はすでに使用されています")
-
-        # 正常系：ダミーのグループIDを生成してGroupエンティティ風オブジェクトを返す
         return DummyGroup(group_id="G_9999", group_name=group_name)
 
 
@@ -62,7 +63,7 @@ HTML_TEMPLATE = """
         .btn { width: 45%; padding: 12px; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; text-decoration: none; color: white; }
         .btn-submit { background-color: #007bff; }
         .btn-submit:hover { background-color: #0056b3; }
-        .btn-back { background-color: #6c757d; line-height: 24px; }
+        .btn-back { background-color: #6c757d; line-height: 24px; text-align: center; }
         .btn-back:hover { background-color: #545b62; }
     </style>
 </head>
@@ -78,12 +79,12 @@ HTML_TEMPLATE = """
             <div class="error-msg">⚠️ {{ error_msg }}</div>
         {% endif %}
         
-        <form action="/group-creation-confirmation" method="POST">
+        <form action="{{ url_for('group_confirmation.group_creation_confirmation_view') }}" method="POST">
             <input type="hidden" name="group_name" value="{{ group_name }}">
             
             <div class="btn-group">
                 <input type="submit" class="btn btn-submit" value="登録する">
-                <a href="/group-creation-placeholder" class="btn btn-back">戻る</a>
+                <a href="/group-creation" class="btn btn-back">戻る</a>
             </div>
         </form>
     </div>
@@ -95,19 +96,19 @@ HTML_TEMPLATE = """
 # ==========================================
 # ルーティング（確認と登録処理）
 # ==========================================
-@app.route("/group-creation-confirmation", methods=["GET", "POST"])
+@group_confirmation_blueprint.route(
+    "/group-creation-confirmation", methods=["GET", "POST"]
+)
 def group_creation_confirmation_view():
-    # 前の画面（group_creation_view）から引き継いだ想定のデータ（テスト用デフォルト値）
+    # 入力画面等から引き継いだグループ名を取得
     group_name = request.args.get(
         "group_name", request.form.get("group_name", "大坪家・三根家")
     )
     error_msg = None
 
-    # --- 「登録する」ボタンが押されたときの処理 (Tkinterの register_group に対応) ---
     if request.method == "POST":
         user = account_manager.get_current_user()
 
-        # 1. ユーザー情報取得チェック
         if user is None:
             error_msg = "ユーザー情報が取得できません"
             return render_template_string(
@@ -115,5 +116,40 @@ def group_creation_confirmation_view():
             )
 
         try:
-            # 2. グループ作成処理の実行 (Tkinterの messagebox / ウィンドウ破棄をFlaskのリダイレクトに置き換え)
-            group = group
+            # コントロール層のグループ作成処理を呼び出し
+            group = group_manager.create_group(user.account_id, group_name)
+
+            # 登録成功時は完了画面（パラメータ付き）へリダイレクト
+            return redirect(
+                url_for(
+                    "group_confirmation.success_page",
+                    group_id=group.group_id,
+                    group_name=group.group_name,
+                )
+            )
+
+        except ValueError as e:
+            error_msg = str(e)
+            return render_template_string(
+                HTML_TEMPLATE, group_name=group_name, error_msg=error_msg
+            )
+
+    return render_template_string(
+        HTML_TEMPLATE, group_name=group_name, error_msg=error_msg
+    )
+
+
+@group_confirmation_blueprint.route("/success")
+def success_page():
+    group_id = request.args.get("group_id", "")
+    group_name = request.args.get("group_name", "")
+    return f"""
+    <div style="text-align: center; margin-top: 50px; font-family: sans-serif; line-height: 1.8;">
+        <h1>🎉 登録完了</h1>
+        <p style="font-size: 18px;">グループを作成しました。</p>
+        <div style="background-color: #f8f9fa; display: inline-block; padding: 20px; border-radius: 8px; border: 1px solid #ddd; text-align: left; margin: 15px 0;">
+            <strong>🆔 グループID：</strong> {group_id} <br>
+            <strong>📁 グループ名：</strong> {group_name}
+        </div>
+        <br>
+        <a href="/" style="font-s
