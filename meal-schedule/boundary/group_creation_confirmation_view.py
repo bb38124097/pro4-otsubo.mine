@@ -1,6 +1,6 @@
 from flask import Blueprint, redirect, render_template_string, request, url_for
 
-# 本来のパッケージ構成に合わせてインポート（必要に応じてDummyの代わりに有効化してください）
+# 本来のパッケージ構成に合わせてインポート
 # from control.account_manager import AccountManager
 # from control.group_manager import GroupManager
 
@@ -100,7 +100,6 @@ HTML_TEMPLATE = """
     "/group-creation-confirmation", methods=["GET", "POST"]
 )
 def group_creation_confirmation_view():
-    # 入力画面等から引き継いだグループ名を取得
     group_name = request.args.get(
         "group_name", request.form.get("group_name", "大坪家・三根家")
     )
@@ -116,10 +115,8 @@ def group_creation_confirmation_view():
             )
 
         try:
-            # コントロール層のグループ作成処理を呼び出し
             group = group_manager.create_group(user.account_id, group_name)
 
-            # 登録成功時は完了画面（パラメータ付き）へリダイレクト
             return redirect(
                 url_for(
                     "group_confirmation.success_page",
@@ -143,6 +140,7 @@ def group_creation_confirmation_view():
 def success_page():
     group_id = request.args.get("group_id", "")
     group_name = request.args.get("group_name", "")
+    # 修正箇所: 途切れていたHTML文字列とaタグをきれいに閉じました
     return f"""
     <div style="text-align: center; margin-top: 50px; font-family: sans-serif; line-height: 1.8;">
         <h1>🎉 登録完了</h1>
@@ -152,4 +150,6 @@ def success_page():
             <strong>📁 グループ名：</strong> {group_name}
         </div>
         <br>
-        <a href="/" style="font-s
+        <a href="/" style="font-size: 16px; color: #007bff; text-decoration: none;">ホームに戻る</a>
+    </div>
+    """
