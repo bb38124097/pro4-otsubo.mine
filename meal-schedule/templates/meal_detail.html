@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>詳細入力</title>
+</head>
+
+<body>
+
+<h2>{{ target_date }}</h2>
+
+<h3>{{ meal_type }}</h3>
+
+<form method="post">
+
+帰宅時間
+
+<input 
+type="time"
+name="return_time">
+
+<br><br>
+
+伝言
+
+<br>
+
+<textarea 
+name="message"
+rows="4" cols="40"></textarea>
+
+<br><br>
+
+<button type="submit">
+登録
+</button>
+
+</form>
+
+</body>
+</html>

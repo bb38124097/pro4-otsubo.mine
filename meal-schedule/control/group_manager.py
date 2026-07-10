@@ -159,3 +159,22 @@ class GroupManager:
             return None
 
         return row[0]
+    
+    def get_group_members(self, group_id):
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT users.account_id, users.user_name
+            FROM users
+            JOIN group_members
+                ON users.account_id = group_members.account_id
+            WHERE group_members.group_id = ?
+            ORDER BY users.user_name
+        """, (group_id,))
+
+        members = cursor.fetchall()
+
+        conn.close()
+
+        return members

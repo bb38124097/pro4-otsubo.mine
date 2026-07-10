@@ -70,39 +70,58 @@
 
 </div>
 
-<h2>2026年7月</h2>
+<div style="margin:20px;">
+
+    <a href="/main?year={{ prev_year }}&month={{ prev_month }}">
+        <button>{{ prev_month }}月</button>
+    </a>
+
+    <span style="font-size:24px; margin:0 30px;">
+        {{ year }}年 {{ month }}月
+    </span>
+
+    <a href="/main?year={{ next_year }}&month={{ next_month }}">
+        <button>{{ next_month }}月</button>
+    </a>
+
+</div>
 
 <table>
 
 <tr>
-<th>月</th>
-<th>火</th>
-<th>水</th>
-<th>木</th>
-<th>金</th>
-<th>土</th>
-<th>日</th>
+    <th>月</th>
+    <th>火</th>
+    <th>水</th>
+    <th>木</th>
+    <th>金</th>
+    <th>土</th>
+    <th>日</th>
 </tr>
 
+{% for week in month_calendar %}
 <tr>
+
+{% for day in week %}
+
+{% if day == 0 %}
 <td></td>
-<td>1</td>
-<td>2</td>
-<td>3</td>
-<td>4</td>
-<td>5</td>
-<td>6</td>
-</tr>
 
-<tr>
-<td><button>7</button></td>
-<td><button>8</button></td>
-<td><button>9</button></td>
-<td><button>10</button></td>
-<td><button>11</button></td>
-<td><button>12</button></td>
-<td><button>13</button></td>
+{% else %}
+<td>
+
+<a href="/meal/{{ year }}-{{ '%02d' % month }}-{{ '%02d' % day }}">
+    <button>
+        {{ day }}
+    </button>
+</a>
+
+</td>
+{% endif %}
+
+{% endfor %}
+
 </tr>
+{% endfor %}
 
 </table>
 

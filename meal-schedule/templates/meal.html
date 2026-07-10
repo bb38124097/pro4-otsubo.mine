@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>食事登録</title>
+
+<hr>
+
+<h2>グループメンバーの予定</h2>
+
+<table border="1" style="margin:auto">
+
+<tr>
+    <th>名前</th>
+    <th>食事</th>
+    <th>必要</th>
+    <th>帰宅時間</th>
+    <th>伝言</th>
+</tr>
+
+{% for s in schedules %}
+
+<tr>
+
+<td>{{ s[0] }}</td>
+
+<td>
+{% if s[1]=="breakfast" %}
+朝
+{% elif s[1]=="lunch" %}
+昼
+{% else %}
+夜
+{% endif %}
+</td>
+
+<td>
+{% if s[2] %}
+〇
+{% else %}
+×
+{% endif %}
+</td>
+
+<td>{{ s[3] }}</td>
+
+<td>{{ s[4] }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+</head>
+
+<body>
+
+<h2>{{ target_date }}</h2>
+
+<form method="post">
+
+<select name="meal_type">
+
+<option value="breakfast">朝食</option>
+<option value="lunch">昼食</option>
+<option value="dinner">夕食</option>
+
+</select>
+
+<br><br>
+
+<label>
+<input type="radio"
+name="required"
+value="yes"
+checked>
+
+必要
+</label>
+
+<label>
+<input type="radio"
+name="required"
+value="no">
+
+不要
+</label>
+
+<br><br>
+
+<button type="submit">
+次へ
+</button>
+
+</form>
+
+<br>
+
+<a href="/main">
+戻る
+</a>
+
+</body>
+</html>
