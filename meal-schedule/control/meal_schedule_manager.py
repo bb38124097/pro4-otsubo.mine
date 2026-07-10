@@ -68,3 +68,34 @@ class MealScheduleManager:
             "return_time": row[1],
             "message": row[2]
         }
+    
+    def get_group_schedule(self, group_id, target_date):
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                users.user_name,
+                meal_schedules.meal_type,
+                meal_schedules.required,
+                meal_schedules.return_time,
+                meal_schedules.message
+            FROM meal_schedules
+            JOIN users
+                ON meal_schedules.account_id = users.account_id
+            JOIN group_members
+                ON users.account_id = group_members.account_id
+            WHERE
+                group_members.group_id = ?
+                AND meal_schedules.target_date = ?
+            ORDER BY
+                users.user_name,
+                meal_schedules.meal_type
+        """, (group_id, target_date))
+
+        schedules = cursor.fetchall()
+
+        conn.close()
+
+        return schedules
+
