@@ -1,17 +1,18 @@
-from flask import Flask, render_template_string, request, redirect, url_for
-# 本来は control.group_manager からインポートします
-# from control.group_manager import GroupManager
+from flask import Flask, redirect, render_template_string, request, url_for
 
 app = Flask(__name__)
+
 
 # ==========================================
 # コントロール層（DummyManager）
 # ==========================================
 class DummyGroupManager:
+
     def check_group_name_length(self, group_name: str) -> bool:
         """グループ名が1〜20文字であるかチェック（元ロジックの再現）"""
         length = len(group_name)
         return 1 <= length <= 20
+
 
 # マネージャーのインスタンス化
 group_manager = DummyGroupManager()
@@ -62,33 +63,39 @@ HTML_TEMPLATE = """
 # ==========================================
 # ルーティング（入力と確認画面への遷移処理）
 # ==========================================
-@app.route('/group-creation', methods=['GET', 'POST'])
+@app.route("/group-creation", methods=["GET", "POST"])
 def group_creation_view():
     error_msg = None
     group_name = ""
 
     # --- 「作成」ボタンが押されたときの処理 (Tkinterの create_group に対応) ---
-    if request.method == 'POST':
-        group_name = request.form.get('group_name', '').strip()
-        
+    if request.method == "POST":
+        group_name = request.form.get("group_name", "").strip()
+
         # マネージャーに文字数チェックを依頼
         if group_manager.check_group_name_length(group_name):
-            # チェックOKなら、確認画面(group_creation_confirmation_view)へグループ名をパラメータで渡してリダイレクト
-            # 元のコードの view.display() と self.window.destroy() に対応する動きです
-            return redirect(f"/group-creation-confirmation?group_name={group_name}")
+            # チェックOKなら、確認画面へグループ名をパラメータで渡してリダイレクト
+            # 元のコードの GroupCreationConfirmationView(group_name).display() に対応する動きです
+            return redirect(
+                url_for("confirmation_placeholder", group_name=group_name)
+            )
         else:
             # エラー時はメッセージをセットして自画面を再描画
             error_msg = "グループ名は1～20文字で入力してください"
-            return render_template_string(HTML_TEMPLATE, error_msg=error_msg, current_value=group_name)
+            return render_template_string(
+                HTML_TEMPLATE, error_msg=error_msg, current_value=group_name
+            )
 
     # --- 画面を初めて開いたときの処理 (Tkinterの display に対応) ---
-    return render_template_string(HTML_TEMPLATE, error_msg=error_msg, current_value=group_name)
+    return render_template_string(
+        HTML_TEMPLATE, error_msg=error_msg, current_value=group_name
+    )
 
 
 # 前回の確認画面を簡易的にドッキングしてテストしやすくしています
-@app.route('/group-creation-confirmation')
+@app.route("/group-creation-confirmation")
 def confirmation_placeholder():
-    name = request.args.get('group_name', '')
+    name = request.args.get("group_name", "")
     return f"""
     <div style="text-align: center; margin-top: 50px; font-family: sans-serif;">
         <h2>（ここは group_creation_confirmation_view のダミーです）</h2>
