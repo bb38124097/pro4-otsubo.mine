@@ -4,9 +4,10 @@ from control.group_manager import GroupManager
 from control.account_manager import AccountManager
 
 class GroupCreationView:
-    def __init__(self):
+    def __init__(self, refresh_callback):
         self.manager = GroupManager()
         self.account_manager = AccountManager()
+        self.refresh_callback = refresh_callback
 
     def display(self):
         self.window = tk.Toplevel()
@@ -42,5 +43,3 @@ class GroupCreationView:
 
         view = GroupCreationConfirmationView(group_name)
         view.display()
-
-        self.window.destroy()

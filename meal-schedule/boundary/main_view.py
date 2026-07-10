@@ -8,7 +8,7 @@ from boundary.add_member_view import AddMemberView
 from boundary.leave_group_view import LeaveGroupView
 from boundary.date_detail_view import DateDetailView
 from control.account_manager import AccountManager
-
+from boundary.account_registration_view import AccountRegistrationView
 
 class MainView:
 
@@ -87,9 +87,6 @@ class MainView:
         header = tk.Frame(self.calendar_area)
         header.pack(pady=10)
 
-        header = tk.Frame(self.calendar_area)
-        header.pack(pady=10)
-
         prev_month = 12 if self.month == 1 else self.month - 1
         next_month = 1 if self.month == 12 else self.month + 1
 
@@ -157,15 +154,7 @@ class MainView:
         view.display()
 
     def open_group_creation_view(self):
-        view = GroupCreationView()
-        view.display()
-
-    def open_add_member_view(self):
-        view = AddMemberView()
-        view.display()
-
-    def open_leave_group_view(self):
-        view = LeaveGroupView()
+        view = GroupCreationView(self.refresh_main_view)
         view.display()
 
     def create_registration_form(self):
@@ -226,3 +215,30 @@ class MainView:
             self.month += 1
 
         self.create_calendar()
+
+    def refresh_main_view(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        tk.Label(
+            self.root,
+            text="食事予定管理システム",
+            font=("Yu Gothic", 18)
+        ).pack(pady=10)
+
+        self.create_menu_buttons()
+        self.calendar_area = tk.Frame(self.root)
+        self.calendar_area.pack()
+        self.create_calendar()
+
+    def open_group_creation_view(self):
+        view = GroupCreationView()
+        view.display()
+
+    def open_leave_group_view(self):
+        view = LeaveGroupView(self.refresh_main_view)
+        view.display()
+
+    def open_add_member_view(self):
+        view = AddMemberView()
+        view.display()

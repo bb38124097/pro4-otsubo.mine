@@ -64,6 +64,10 @@ class GroupCreationConfirmationView:
                 f"グループ名：{group.group_name}"
             )
 
+            self.parent_window.destroy()   # グループ名入力画面
+            self.window.destroy()          # 確認画面
+            self.refresh_callback()
+
             self.window.destroy()
 
         except ValueError as e:
