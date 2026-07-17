@@ -47,28 +47,37 @@ class MealScheduleManager:
         conn.commit()
         conn.close()
 
-    def get_schedule(self, account_id, target_date, meal_type):
+    def get_schedule(self, account_id, target_date):
+
         conn = sqlite3.connect(self.db_name)
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT required, return_time, message
+            SELECT
+                breakfast_required,
+                lunch_required,
+                dinner_required,
+                return_time,
+                message
             FROM meal_schedules
-            WHERE account_id = ? AND target_date = ? AND meal_type = ?
-            ORDER BY schedule_id DESC
-            LIMIT 1
-        """, (account_id, target_date, meal_type))
+            WHERE
+                account_id=?
+                AND target_date=?
+        """,(account_id,target_date))
 
         row = cursor.fetchone()
+
         conn.close()
 
         if row is None:
             return None
 
         return {
-            "required": bool(row[0]),
-            "return_time": row[1],
-            "message": row[2]
+            "breakfast": row[0],
+            "lunch": row[1],
+            "dinner": row[2],
+            "return_time": row[3] or "",
+            "message": row[4] or ""
         }
     
     def get_group_schedule(self, group_id, target_date):

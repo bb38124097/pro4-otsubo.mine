@@ -2,13 +2,10 @@ import sqlite3, random
 from entity.user import User
 
 class AccountManager:
-    current_user = None
     def __init__(self):
         self.db_name = "meal_schedule.db"
         self.create_table()
 
-        if AccountManager.current_user is None:
-            AccountManager.current_user = self.get_user()
 
     def create_table(self):
         conn = sqlite3.connect(self.db_name)
@@ -41,8 +38,6 @@ class AccountManager:
         conn.close()
 
         user =User(account_id, user_name)
-        AccountManager.current_user = user
-
         return user
   
     def has_user(self):
@@ -89,9 +84,6 @@ class AccountManager:
                 conn.close()
                 return account_id
             
-    def get_current_user(self):
-        return AccountManager.current_user
-    
     def delete_user(self, account_id):
 
         conn = sqlite3.connect(self.db_name)
@@ -115,5 +107,22 @@ class AccountManager:
         conn.commit()
         conn.close()
 
-        AccountManager.current_user = None
+    def get_user_by_id(self, account_id):
 
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT account_id,user_name
+            FROM users
+            WHERE account_id=?
+        """,(account_id,))
+
+        row = cursor.fetchone()
+
+        conn.close()
+
+        if row is None:
+            return None
+
+        return User(row[0],row[1])

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 from control.account_manager import AccountManager
 from control.meal_schedule_manager import MealScheduleManager
 from control.group_manager import GroupManager
@@ -10,15 +10,24 @@ group_manager = GroupManager()
 meal_manager = MealScheduleManager()
 
 app = Flask(__name__)
+app.secret_key = "meal_schedule_secret"
 
+def get_login_user():
 
+    account_id = session.get("account_id")
+
+    if account_id is None:
+        return None
+
+    return account_manager.get_user_by_id(account_id)
 
 @app.route("/")
 def index():
-    if account_manager.has_user():
-        return redirect("/main")
-    return render_template("index.html")
 
+    if session.get("account_id"):
+        return redirect("/main")
+
+    return render_template("index.html")
 
 @app.route("/register")
 def register():
@@ -35,13 +44,41 @@ def register_post():
             error="ユーザー名は1～20文字で入力してください"
         )
 
-    account_manager.register_user(user_name)
+    user = account_manager.register_user(user_name)
+
+    session["account_id"] = user.account_id
 
     return redirect("/main")
 
+@app.route("/login")
+def login():
+
+    return render_template("login.html")
+
+@app.route("/login", methods=["POST"])
+def login_post():
+
+    account_id = request.form["account_id"]
+
+    user = account_manager.get_user_by_id(account_id)
+
+    if user is None:
+        return render_template(
+            "login.html",
+            error="アカウントIDが存在しません"
+        )
+
+    session["account_id"] = user.account_id
+
+    return redirect("/main")
 
 @app.route("/main")
 def main():
+
+    user = get_login_user()
+
+    if user is None:
+        return redirect("/")
 
     year = request.args.get("year", type=int)
     month = request.args.get("month", type=int)
@@ -65,30 +102,31 @@ def main():
         next_month = 1
         next_year += 1
 
-    user = account_manager.get_current_user()
-
     has_group = False
     if user is not None:
         has_group = group_manager.has_group(user.account_id)
 
     return render_template(
         "main.html",
+        has_group=has_group,
         year=year,
         month=month,
         month_calendar=month_calendar,
         prev_year=prev_year,
         prev_month=prev_month,
         next_year=next_year,
-        next_month=next_month,
-        has_group=has_group
+        next_month=next_month
     )
 
 
 @app.route("/meal/<target_date>")
 def meal(target_date):
 
-    user = account_manager.get_current_user()
+    user = get_login_user()
 
+    if user is None:
+        return redirect("/login")
+    
     group_id = group_manager.get_user_group_id(
         user.account_id
     )
@@ -116,7 +154,10 @@ def meal(target_date):
 @app.route("/meal_detail/<target_date>", methods=["GET", "POST"])
 def meal_detail(target_date):
 
-    user = account_manager.get_current_user()
+    user = get_login_user()
+
+    if user is None:
+        return redirect("/")
 
     if request.method == "POST":
 
@@ -147,7 +188,7 @@ def meal_detail(target_date):
 @app.route("/account")
 def account():
 
-    user = account_manager.get_current_user()
+    user = get_login_user()
 
     return render_template(
         "account.html",
@@ -157,7 +198,7 @@ def account():
 @app.route("/delete_account", methods=["POST"])
 def delete_account():
 
-    user = account_manager.get_current_user()
+    user = get_login_user()
 
     account_manager.delete_user(user.account_id)
 
@@ -170,7 +211,7 @@ def group_create():
 @app.route("/group_create", methods=["POST"])
 def group_create_post():
 
-    user = account_manager.get_current_user()
+    user = get_login_user()
     group_name = request.form["group_name"]
 
     try:
@@ -193,7 +234,7 @@ def add_member():
 @app.route("/add_member", methods=["POST"])
 def add_member_post():
 
-    user = account_manager.get_current_user()
+    user = get_login_user()
 
     group_id = group_manager.get_user_group_id(
         user.account_id
@@ -222,7 +263,7 @@ def leave_group():
 @app.route("/leave_group", methods=["POST"])
 def leave_group_post():
 
-    user = account_manager.get_current_user()
+    user = get_login_user()
 
     group_id = group_manager.get_user_group_id(
         user.account_id
@@ -235,6 +276,14 @@ def leave_group_post():
 
     return redirect("/main")
 
+def get_login_user():
+
+    account_id = session.get("account_id")
+
+    if account_id is None:
+        return None
+
+    return account_manager.get_user_by_id(account_id)
 
 
 
