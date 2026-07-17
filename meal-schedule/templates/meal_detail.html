@@ -1,33 +1,22 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<title>詳細入力</title>
-</head>
-
-<body>
-
-<h2>{{ target_date }}</h2>
-
-<h3>{{ meal_type }}</h3>
-
 <form method="post">
 
-帰宅時間
+<h3>朝食</h3>
+<input type="radio" name="breakfast" value="1">必要
+<input type="radio" name="breakfast" value="0" checked>不要
 
-<input 
-type="time"
-name="return_time">
+<h3>昼食</h3>
+<input type="radio" name="lunch" value="1">必要
+<input type="radio" name="lunch" value="0" checked>不要
 
-<br><br>
+<h3>夕食</h3>
+<input type="radio" name="dinner" value="1">必要
+<input type="radio" name="dinner" value="0" checked>不要
 
-伝言
+<h3>帰宅時間</h3>
+<input type="time" name="return_time">
 
-<br>
-
-<textarea 
-name="message"
-rows="4" cols="40"></textarea>
+<h3>メッセージ</h3>
+<textarea name="message"></textarea>
 
 <br><br>
 
@@ -36,6 +25,3 @@ rows="4" cols="40"></textarea>
 </button>
 
 </form>
-
-</body>
-</html>
