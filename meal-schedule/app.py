@@ -65,6 +65,12 @@ def main():
         next_month = 1
         next_year += 1
 
+    user = account_manager.get_current_user()
+
+    has_group = False
+    if user is not None:
+        has_group = group_manager.has_group(user.account_id)
+
     return render_template(
         "main.html",
         year=year,
@@ -73,7 +79,8 @@ def main():
         prev_year=prev_year,
         prev_month=prev_month,
         next_year=next_year,
-        next_month=next_month
+        next_month=next_month,
+        has_group=has_group
     )
 
 
@@ -86,9 +93,15 @@ def meal(target_date):
         user.account_id
     )
 
-    schedules = []
+    if group_id is None:
 
-    if group_id is not None:
+        schedules = meal_manager.get_user_schedule(
+            user.account_id,
+            target_date
+        )
+
+    else:
+
         schedules = meal_manager.get_group_schedule(
             group_id,
             target_date
@@ -100,26 +113,26 @@ def meal(target_date):
         schedules=schedules
     )
 
-@app.route(
-    "/meal_detail/<target_date>/<meal_type>",
-    methods=["GET", "POST"]
-)
-def meal_detail(target_date, meal_type):
+@app.route("/meal_detail/<target_date>", methods=["GET", "POST"])
+def meal_detail(target_date):
+
+    user = account_manager.get_current_user()
 
     if request.method == "POST":
+
+        breakfast = request.form["breakfast"] == "1"
+        lunch = request.form["lunch"] == "1"
+        dinner = request.form["dinner"] == "1"
 
         return_time = request.form["return_time"]
         message = request.form["message"]
 
-        user = account_manager.get_current_user()
-
-        account_id = user.account_id
-        
-        meal_manager.set_one_meal_schedule(
-            account_id,
+        meal_manager.set_schedule(
+            user.account_id,
             target_date,
-            meal_type,
-            True,
+            breakfast,
+            lunch,
+            dinner,
             return_time,
             message
         )
@@ -128,9 +141,102 @@ def meal_detail(target_date, meal_type):
 
     return render_template(
         "meal_detail.html",
-        target_date=target_date,
-        meal_type=meal_type
+        target_date=target_date
     )
+
+@app.route("/account")
+def account():
+
+    user = account_manager.get_current_user()
+
+    return render_template(
+        "account.html",
+        user=user
+    )
+
+@app.route("/delete_account", methods=["POST"])
+def delete_account():
+
+    user = account_manager.get_current_user()
+
+    account_manager.delete_user(user.account_id)
+
+    return redirect("/")
+
+@app.route("/group_create")
+def group_create():
+    return render_template("group_create.html")
+
+@app.route("/group_create", methods=["POST"])
+def group_create_post():
+
+    user = account_manager.get_current_user()
+    group_name = request.form["group_name"]
+
+    try:
+        group_manager.create_group(
+            user.account_id,
+            group_name
+        )
+    except ValueError as e:
+        return render_template(
+            "group_create.html",
+            error=str(e)
+        )
+
+    return redirect("/main")
+
+@app.route("/add_member")
+def add_member():
+    return render_template("add_member.html")
+
+@app.route("/add_member", methods=["POST"])
+def add_member_post():
+
+    user = account_manager.get_current_user()
+
+    group_id = group_manager.get_user_group_id(
+        user.account_id
+    )
+
+    account_id = request.form["account_id"]
+
+    try:
+        group_manager.add_member(
+            group_id,
+            account_id
+        )
+    except ValueError as e:
+        return render_template(
+            "add_member.html",
+            error=str(e)
+        )
+
+    return redirect("/main")
+
+@app.route("/leave_group")
+def leave_group():
+    return render_template("leave_group.html")
+
+
+@app.route("/leave_group", methods=["POST"])
+def leave_group_post():
+
+    user = account_manager.get_current_user()
+
+    group_id = group_manager.get_user_group_id(
+        user.account_id
+    )
+
+    group_manager.remove_member(
+        group_id,
+        user.account_id
+    )
+
+    return redirect("/main")
+
+
+
 
 if __name__ == "__main__":
     app.run(

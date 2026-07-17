@@ -58,15 +58,27 @@
 
 <div class="menu">
 
-    <button>登録情報</button>
+    <a href="/account">
+        <button>登録情報</button>
+    </a>
 
-    <button>グループ作成</button>
+    {% if has_group %}
 
-    <!-- 所属後はここを変える -->
-    <!--
-    <button>メンバー追加</button>
-    <button>グループ退出</button>
-    -->
+        <a href="/add_member">
+            <button>メンバー追加</button>
+        </a>
+
+        <a href="/leave_group">
+            <button>グループ退出</button>
+        </a>
+
+    {% else %}
+
+        <a href="/group_create">
+            <button>グループ作成</button>
+        </a>
+
+    {% endif %}
 
 </div>
 
@@ -109,11 +121,9 @@
 {% else %}
 <td>
 
-<a href="/meal/{{ year }}-{{ '%02d' % month }}-{{ '%02d' % day }}">
-    <button>
-        {{ day }}
-    </button>
-</a>
+<button onclick="showDetail('{{ year }}-{{ '%02d' % month }}-{{ '%02d' % day }}')">
+    {{ day }}
+</button>
 
 </td>
 {% endif %}
@@ -124,6 +134,30 @@
 {% endfor %}
 
 </table>
+
+<br>
+
+<div id="detail-area">
+
+    <h3>日付を選択してください</h3>
+
+</div>
+
+<script>
+
+function showDetail(date){
+
+    fetch("/meal/" + date)
+
+    .then(response => response.text())
+
+    .then(html => {
+        document.getElementById("detail-area").innerHTML = html;
+    });
+
+}
+
+</script>
 
 </body>
 </html>

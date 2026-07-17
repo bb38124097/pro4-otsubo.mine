@@ -91,3 +91,29 @@ class AccountManager:
             
     def get_current_user(self):
         return AccountManager.current_user
+    
+    def delete_user(self, account_id):
+
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "DELETE FROM meal_schedules WHERE account_id = ?",
+            (account_id,)
+        )
+
+        cursor.execute(
+            "DELETE FROM group_members WHERE account_id = ?",
+            (account_id,)
+        )
+
+        cursor.execute(
+            "DELETE FROM users WHERE account_id = ?",
+            (account_id,)
+        )
+
+        conn.commit()
+        conn.close()
+
+        AccountManager.current_user = None
+
