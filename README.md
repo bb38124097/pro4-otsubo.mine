@@ -4,22 +4,8 @@
 
 ・ソースコードの構成（フォルダ構成など）
 
-本システムは、演習の設計方針である **Entity-Control-Boundary（ECB）の三層アーキテクチャ** に基づき、ディレクトリごとに役割を明確に分離して実装しています。
-
-```text
+```
 meal-schedule/
-├── boundary/            
-│   ├── account_registration_view.py
-│   ├── add_member_view.py
-│   ├── date_detail_view.py
-│   ├── delete_account_view.py
-│   ├── group_creation_confirmation_view.py
-│   ├── group_creation_view.py
-│   ├── leave_group_view.py
-│   ├── main_view.py
-│   ├── meal_input_view.py
-│   ├── message_input_view.py
-│   └── return_time_input_view.py
 ├── control/              
 │   ├── account_manager.py
 │   ├── group_manager.py
