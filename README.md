@@ -22,9 +22,7 @@ meal-schedule/
 │   ├── account.html
 │   ├── add_member.html
 │   ├── group_create.html
-│   ├── index.html
 │   ├── leave_group.html
-│   ├── login.html
 │   ├── main.html
 │   ├── meal_detail.html
 │   ├── meal.html
