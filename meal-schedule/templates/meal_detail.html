@@ -1,70 +1,138 @@
+<div class="card">
+
+<h2>{{ target_date }}</h2>
+
 <form method="post">
 
-<h3>朝食</h3>
-<input
-type="radio"
-name="breakfast"
-value="1"
-{% if schedule and schedule.breakfast %}checked{% endif %}
->
+<!-- 朝食 -->
+<div class="meal-card">
+
+<h3>🍳 朝食</h3>
+
+<label>
+<input type="radio" name="breakfast" value="1"
+{% if schedule and schedule.breakfast %}checked{% endif %}>
 必要
+</label>
 
-<input
-type="radio"
-name="breakfast"
-value="0"
-{% if not schedule or not schedule.breakfast %}checked{% endif %}
->
+<label>
+<input type="radio" name="breakfast" value="0"
+{% if not schedule or not schedule.breakfast %}checked{% endif %}>
 不要
+</label>
 
-<h3>昼食</h3>
-<input
-type="radio"
-name="lunch"
-value="1"
-{% if schedule and schedule.lunch %}checked{% endif %}
->
+<div id="breakfast_area">
+    <textarea
+    name="breakfast_message"
+    placeholder="メッセージを入力">{{ schedule.breakfast_message if schedule else '' }}</textarea>
+</div>
+
+</div>
+
+<!-- 昼食 -->
+<div class="meal-card">
+
+<h3>🍱 昼食</h3>
+
+<label>
+<input type="radio" name="lunch" value="1"
+{% if schedule and schedule.lunch %}checked{% endif %}>
 必要
+</label>
 
-<input
-type="radio"
-name="lunch"
-value="0"
-{% if not schedule or not schedule.lunch %}checked{% endif %}
->
+<label>
+<input type="radio" name="lunch" value="0"
+{% if not schedule or not schedule.lunch %}checked{% endif %}>
 不要
+</label>
 
-<h3>夕食</h3>
-<input
-type="radio"
-name="dinner"
-value="1"
-{% if schedule and schedule.dinner %}checked{% endif %}
->
+<div id="lunch_area">
+    <textarea
+    name="lunch_message"
+    placeholder="メッセージを入力">{{ schedule.lunch_message if schedule else '' }}</textarea>
+</div>
+
+</div>
+
+<!-- 夕食 -->
+<div class="meal-card">
+
+<h3>🌙 夕食</h3>
+
+<label>
+<input type="radio" name="dinner" value="1"
+{% if schedule and schedule.dinner %}checked{% endif %}>
 必要
+</label>
 
-<input
-type="radio"
-name="dinner"
-value="0"
-{% if not schedule or not schedule.dinner %}checked{% endif %}
->
+<label>
+<input type="radio" name="dinner" value="0"
+{% if not schedule or not schedule.dinner %}checked{% endif %}>
 不要
+</label>
 
-<h3>帰宅時間</h3>
+<div id="dinner_area">
+    <textarea
+    name="dinner_message"
+    placeholder="メッセージを入力">{{ schedule.dinner_message if schedule else '' }}</textarea>
+</div>
+
+<div id="return_time_area">
+
+<h4>🕒 帰宅時間</h4>
+
 <input
 type="time"
 name="return_time"
-value="{{ schedule.return_time if schedule else '' }}"
->
+value="{{ schedule.return_time if schedule else '' }}">
 
-<h3>メッセージ</h3>
-<textarea name="message">{{ schedule.message if schedule else '' }}</textarea>
+</div>
 
-<br><br>
+</div>
 
-<button type="submit">
-登録
+<button class="save-button" type="submit">
+登録する
 </button>
 
 </form>
+
+</div>
+
+<script>
+function toggleInput() {
+
+    // 朝食メッセージ
+    document.getElementById("breakfast_area").style.display =
+        document.querySelector('input[name="breakfast"]:checked').value == "1"
+        ? "block" : "none";
+
+    // 昼食メッセージ
+    document.getElementById("lunch_area").style.display =
+        document.querySelector('input[name="lunch"]:checked').value == "1"
+        ? "block" : "none";
+
+    // 夕食メッセージ
+    document.getElementById("dinner_area").style.display =
+        document.querySelector('input[name="dinner"]:checked').value == "1"
+        ? "block" : "none";
+
+    // 帰宅時間（夕食が必要のときだけ）
+    document.getElementById("return_time_area").style.display =
+        document.querySelector('input[name="dinner"]:checked').value == "1"
+        ? "block" : "none";
+}
+
+document.querySelectorAll('input[name="breakfast"]').forEach(e =>
+    e.addEventListener("change", toggleInput)
+);
+
+document.querySelectorAll('input[name="lunch"]').forEach(e =>
+    e.addEventListener("change", toggleInput)
+);
+
+document.querySelectorAll('input[name="dinner"]').forEach(e =>
+    e.addEventListener("change", toggleInput)
+);
+
+toggleInput();
+</script>

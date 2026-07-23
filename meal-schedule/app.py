@@ -3,7 +3,7 @@ from control.account_manager import AccountManager
 from control.meal_schedule_manager import MealScheduleManager
 from control.group_manager import GroupManager
 import calendar
-from datetime import date
+from datetime import date, timedelta
 
 account_manager = AccountManager()
 group_manager = GroupManager()
@@ -11,6 +11,8 @@ meal_manager = MealScheduleManager()
 
 app = Flask(__name__)
 app.secret_key = "meal_schedule_secret"
+
+app.permanent_session_lifetime = timedelta(days=365)
 
 def get_login_user():
 
@@ -24,10 +26,14 @@ def get_login_user():
 @app.route("/")
 def index():
 
-    if session.get("account_id"):
+    user = get_login_user()
+
+    # 既に登録済みならそのままメインへ
+    if user is not None:
         return redirect("/main")
 
-    return render_template("index.html")
+    # 初回だけ登録画面へ
+    return redirect("/register")
 
 @app.route("/register")
 def register():
@@ -41,11 +47,12 @@ def register_post():
     if not account_manager.check_user_name_length(user_name):
         return render_template(
             "register.html",
-            error="ユーザー名は1～20文字で入力してください"
+            error="ユーザー名は1～6文字で入力してください"
         )
 
     user = account_manager.register_user(user_name)
 
+    session.permanent = True
     session["account_id"] = user.account_id
 
     return redirect("/main")
@@ -82,6 +89,7 @@ def main():
 
     year = request.args.get("year", type=int)
     month = request.args.get("month", type=int)
+    selected_date = request.args.get("selected_date")
 
     if year is None or month is None:
         today = date.today()
@@ -115,7 +123,8 @@ def main():
         prev_year=prev_year,
         prev_month=prev_month,
         next_year=next_year,
-        next_month=next_month
+        next_month=next_month,
+        selected_date=selected_date
     )
 
 
@@ -126,7 +135,13 @@ def meal(target_date):
 
     if user is None:
         return redirect("/login")
-    
+
+    # 自分の予定があるか確認
+    schedule = meal_manager.get_schedule(
+        user.account_id,
+        target_date
+    )
+
     group_id = group_manager.get_user_group_id(
         user.account_id
     )
@@ -148,7 +163,9 @@ def meal(target_date):
     return render_template(
         "meal.html",
         target_date=target_date,
-        schedules=schedules
+        schedules=schedules,
+        schedule=schedule,
+        user=user
     )
 
 @app.route("/meal_detail/<target_date>", methods=["GET", "POST"])
@@ -166,23 +183,76 @@ def meal_detail(target_date):
         dinner = request.form["dinner"] == "1"
 
         return_time = request.form["return_time"]
-        message = request.form["message"]
+
+        breakfast_message = request.form["breakfast_message"]
+        lunch_message = request.form["lunch_message"]
+        dinner_message = request.form["dinner_message"]
+
+    if len(breakfast_message) > 30:
+        schedule = meal_manager.get_schedule(user.account_id, target_date)
+        return render_template(
+            "meal_detail.html",
+            target_date=target_date,
+            schedule=schedule,
+            error="朝食メッセージは30文字以内で入力してください"
+        )
+
+    if len(lunch_message) > 30:
+        schedule = meal_manager.get_schedule(user.account_id, target_date)
+        return render_template(
+            "meal_detail.html",
+            target_date=target_date,
+            schedule=schedule,
+            error="昼食メッセージは30文字以内で入力してください"
+        )
+
+    if len(dinner_message) > 30:
+        schedule = meal_manager.get_schedule(user.account_id, target_date)
+        return render_template(
+            "meal_detail.html",
+            target_date=target_date,
+            schedule=schedule,
+            error="夕食メッセージは30文字以内で入力してください"
+        )
+
+        # 不要なら内容を消す
+        if not breakfast:
+            breakfast_message = ""
+
+        if not lunch:
+            lunch_message = ""
+
+        if not dinner:
+            dinner_message = ""
+            return_time = ""
 
         meal_manager.set_schedule(
             user.account_id,
             target_date,
+
             breakfast,
+            breakfast_message,
+
             lunch,
+            lunch_message,
+
             dinner,
-            return_time,
-            message
+            dinner_message,
+
+            return_time
         )
 
-        return redirect("/main")
+        return redirect(f"/main?selected_date={target_date}")
+
+    schedule = meal_manager.get_schedule(
+        user.account_id,
+        target_date
+    )
 
     return render_template(
         "meal_detail.html",
-        target_date=target_date
+        target_date=target_date,
+        schedule=schedule
     )
 
 @app.route("/account")

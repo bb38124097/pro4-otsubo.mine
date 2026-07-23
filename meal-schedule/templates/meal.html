@@ -2,56 +2,67 @@
 
 {% if schedules %}
 
-<table border="1" style="margin:auto">
-
-<tr>
-    <th>名前</th>
-    <th>朝食</th>
-    <th>昼食</th>
-    <th>夕食</th>
-    <th>帰宅時間</th>
-    <th>メッセージ</th>
-</tr>
-
 {% for s in schedules %}
 
-<tr>
-
-<td>{{ s[0] }}</td>
-
-<td>
-{% if s[1] %}
-必要
+{% if s[0] == user.account_id %}
+<div
+    onclick="location.href='/meal_detail/{{ target_date }}'"
+    style="
+        border:1px solid #ccc;
+        padding:15px;
+        margin:15px 0;
+        border-radius:8px;
+        cursor:pointer;
+    ">
 {% else %}
-不要
+<div class="card">
 {% endif %}
-</td>
 
-<td>
+<h3>{{ s[1] }}</h3>
+
+<p>🍳 朝食：
 {% if s[2] %}
 必要
 {% else %}
 不要
 {% endif %}
-</td>
+</p>
 
-<td>
 {% if s[3] %}
+<p>　メッセージ：{{ s[3] }}</p>
+{% endif %}
+
+<p>🍱 昼食：
+{% if s[4] %}
 必要
 {% else %}
 不要
 {% endif %}
-</td>
+</p>
 
-<td>{{ s[4] }}</td>
+{% if s[5] %}
+<p>　メッセージ：{{ s[5] }}</p>
+{% endif %}
 
-<td>{{ s[5] }}</td>
+<p>🌙 夕食：
+{% if s[6] %}
+必要
+{% else %}
+不要
+{% endif %}
+</p>
 
-</tr>
+{% if s[7] %}
+<p>　メッセージ：{{ s[7] }}</p>
+{% endif %}
+
+{% if s[8] %}
+<p>🕒 帰宅時間：{{ s[8] }}</p>
+{% endif %}
+
+</div>
 
 {% endfor %}
-
-</table>
 
 {% else %}
 
@@ -61,6 +72,8 @@
 
 <br>
 
+{% if not schedule %}
 <a href="/meal_detail/{{ target_date }}">
     <button>食事予定を登録</button>
 </a>
+{% endif %}
